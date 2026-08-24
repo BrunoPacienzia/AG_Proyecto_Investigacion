@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 # VARIABLES
 
-TEMPERATURA = 20
-HUMEDAD = 0.5
+TEMPERATURA = 23
+HUMEDAD = 0.2
 # PRECIPITACIONES = ""
 # VIENTO = ""
 
@@ -23,7 +23,7 @@ sigma_T = 5
 # constante de decaimiento de la humedad
 b = 0.1
 # tasa de crecimiento máxima
-rmax = 4.0
+rmax = 1.0
 
 
 def tasa_crecimiento(T, H):
@@ -33,16 +33,17 @@ def tasa_crecimiento(T, H):
     return r
 
 
-def ricker(N, r, K):
+def logistico(N, r, K):
     """
-    Calcula el % de plantas infestadas del día siguiente.
+    Calcula el % de plantas infestadas del día siguiente (modelo SI discreto).
 
-    Se clipea a [0, K] porque un r cercano a rmax mete al mapa en zona
-    caótica, donde el valor "crudo" puede overshootear muy por encima
-    de K antes de volver a bajar. Eso es correcto matemáticamente, pero
-    interpretado como % de plantas no puede pasar de 100.
+    N/K es la fracción de plantas infestadas y (1 - N/K) la fracción de
+    plantas sanas disponibles para contagiarse. Se clipea a [0, K] porque
+    con r alto (zona caótica) el mapa puede overshootear por encima de K
+    o incluso dar valores negativos, que no tienen sentido como % de
+    plantas.
     """
-    N_siguiente = N * np.exp(r * (1 - N / K))
+    N_siguiente = N + r * N * (1 - N / K)
     return np.clip(N_siguiente, 0, K)
 
 
@@ -53,7 +54,7 @@ def simular_poblacion(N0, r, K, dias):
     Parámetros
     ----------
     N0 : float -> % de plantas infestadas inicial (0-100)
-    r  : float -> tasa de crecimiento (contagio)
+    r  : float -> tasa de contagio
     K  : float -> capacidad de carga (100 = todo el lote infestado)
     dias : int -> cantidad de días a simular
 
@@ -64,11 +65,11 @@ def simular_poblacion(N0, r, K, dias):
     poblacion = np.zeros(dias + 1)
     poblacion[0] = N0
     for t in range(dias):
-        poblacion[t + 1] = ricker(poblacion[t], r, K)
+        poblacion[t + 1] = logistico(poblacion[t], r, K)
     return poblacion
 
 
-def diagrama_bifurcacion(K=100, r_min=0.5, r_max=4.0, n_r=800,
+def diagrama_bifurcacion(K=100, r_min=0.5, r_max=111111.0, n_r=800,
                           transitorio=200, iteraciones=100):
     """
     Genera los datos del diagrama de bifurcación variando r.
@@ -83,16 +84,16 @@ def diagrama_bifurcacion(K=100, r_min=0.5, r_max=4.0, n_r=800,
     for r in valores_r:
         N = K / 2  # condición inicial arbitraria (50% de plantas infestadas)
         for _ in range(transitorio):
-            N = ricker(N, r, K)
+            N = logistico(N, r, K)
         valores_N = []
         for _ in range(iteraciones):
-            N = ricker(N, r, K)
+            N = logistico(N, r, K)
             valores_N.append(N)
         ax.plot([r] * len(valores_N), valores_N, ',k', alpha=0.6)
 
     ax.set_xlabel("Tasa de crecimiento (r)")
     ax.set_ylabel("Plantas infestadas de equilibrio (%)")
-    ax.set_title("Diagrama de bifurcación - Modelo de Ricker (SI vegetal)")
+    ax.set_title("Diagrama de bifurcación - Modelo logístico (SI vegetal)")
     fig.tight_layout()
     return fig
 
