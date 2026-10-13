@@ -1,9 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------------------------------------------------------------------
-# MODELO BIOLÓGICO Y CLIMA
-# ---------------------------------------------------------------------
 TMIN_DESARROLLO = 12.0
 TMAX_DESARROLLO = 38.0
 A_BRIERE = 0.318905
@@ -43,9 +40,6 @@ CICLOS = [
     ("Mayo",       13.5, 76),
 ]
 
-# ---------------------------------------------------------------------
-# PARÁMETROS REALES DEL LOTE Y PESTICIDAS
-# ---------------------------------------------------------------------
 HECTAREAS_LOTE = 100.0         # Tamaño del lote
 
 # Precios oficiales por Litro
@@ -81,9 +75,7 @@ UMBRAL_DANIO = 500.0
 PENALIZACION_REPETICION = 1500.0  # Penalización alta para impedir repetición consecutiva de insecticidas
 PENALIZACION_UMBRAL = 8.0         # Penalización en USD por cada unidad de N sobre el umbral crítico
 
-# ---------------------------------------------------------------------
-# EVALUACIÓN DE ESTRATEGIA (GASTO EN PESTICIDAS + PENALIZACIONES)
-# ---------------------------------------------------------------------
+
 def simular_con_estrategia(cromosoma, N0=N0_INICIAL, K=K_CAPACIDAD):
     poblacion = np.zeros(len(CICLOS) + 1)
     poblacion[0] = N0
@@ -126,9 +118,7 @@ def simular_con_estrategia(cromosoma, N0=N0_INICIAL, K=K_CAPACIDAD):
     
     return poblacion, fitness, gasto_producto_total
 
-# ---------------------------------------------------------------------
-# ALGORITMO GENÉTICO
-# ---------------------------------------------------------------------
+
 def crear_individuo():
     individuo = []
     for _ in range(len(CICLOS)):
@@ -181,9 +171,7 @@ def optimizar_estrategia(tam_poblacion=80, generaciones=150):
         
     return mejor_individuo, mejor_fitness
 
-# ---------------------------------------------------------------------
-# EJECUCIÓN
-# ---------------------------------------------------------------------
+
 if __name__ == "__main__":
     np.random.seed(42)
     
